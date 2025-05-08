@@ -1,0 +1,246 @@
+<!--
+===============================================================
+ Copyright (c) 2025 Bizlution Technology, inc. All rights reserved.
+ 
+ [Author] Bizlution
+ [Date] 2025/4/2
+ [Widget] Bulletin Board
+ [Parameters]
+    - fontFace: font family. def=arial
+    - typeFontSize: font size. def=40
+    - typeFontColor: font color (hex color). def=#000
+    - typeFontBgColor: font color (hex color). def=#000
+    - subjectFontSize: font size. def=35
+    - subjectFontColor: font color (hex color). def=#f00
+    - subjectFontBgColor: font color (hex color). def=#f00
+    - contentFontSize: font size. def=30
+    - contentFontColor: font color (hex color). def=#0f0
+    - contentFontBgColor: font color (hex color). def=#0f0
+    - fontAlign: font align [center|left|right]. def=center
+    - downloadNewsInterval:  interval for fetching news. def=1 minute
+    - playNewsInterval:  interval for playing news. def=5 seconds
+===============================================================
+-->
+<!--[DEFAULT_VALUE={1, 100}:typeFontSize=60]-->
+<!--[DEFAULT_VALUE=color:typeFontColor=#fffcee]-->
+<!--[DEFAULT_VALUE=color:typeFontBgColor=#bfa885]-->
+<!--[DEFAULT_VALUE={1, 100}:subjectFontSize=50]-->
+<!--[DEFAULT_VALUE=color:subjectFontColor=#000]-->
+<!--[DEFAULT_VALUE=color:subjectFontBgColor=#fffcee]-->
+<!--[DEFAULT_VALUE={1, 100}:contentFontSize=40]-->
+<!--[DEFAULT_VALUE=color:contentFontColor=#000]-->
+<!--[DEFAULT_VALUE=color:contentFontBgColor=#fffcee]-->
+<!--[DEFAULT_VALUE:fontAlign=center|left|right]-->
+<!--[DEFAULT_VALUE={1, 14400}:downloadNewsInterval=5]-->
+<!--[DEFAULT_VALUE={1, 100}:playNewsInterval=5]-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="bulletin board">
+    <title>Bulletin Board</title>
+
+<style>
+        * {
+          box-sizing: border-box;
+        }
+    
+        body, html {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+          background: #bfa885;
+        }
+    
+        .wrapper {
+          height: 100%;
+          padding: 2rem; /* margin-like space around the whole layout */
+        }
+    
+        .container {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          height: 100%;
+          max-width: 900px;
+          margin: auto;
+          background-color: #fffcee;
+          border-radius: 12px;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+          padding: 2rem;
+        }
+    
+        .text-section {
+          flex: 0 0 auto;
+        }
+    
+        .text-line {
+          margin: 1rem 0;
+        }
+    
+        .image-container {
+          flex: 1 1 auto;
+          display: flex;
+          align-items: flex-end;
+        }
+    
+        .image-container img {
+          width: 100%;
+          height: auto;
+          max-height: 100%;
+          object-fit: cover;
+          border-radius: 10px;
+        }
+</style>    
+
+    <script src="moment.min.js"></script>
+    <script>
+        function isset(o) { return ('undefined' !== typeof o); }
+        function isint(n) { var x; return isNaN(n) ? !1 : (x = parseFloat(n), (0 | x) === x); }
+        function isstr(s) { return ('string' === typeof s || s instanceof String); }
+        function isHexColor(c) { return (/^\#[0-9a-f]{3}$/i.test(c) || /^\#[0-9a-f]{6}$/i.test(c)); }
+
+        moment.locale(navigator.language);
+
+        window.addEventListener('load', function () {
+            var container = document.getElementById('content-container');
+            var domType = document.createElement('div');
+            var domSubject = document.createElement('div');
+            var domContent = document.createElement('div');
+            var domImage =  document.createElement('div');
+            var domNewsImage = document.createElement('img');
+
+            // load query string (and hash string)
+            var params = (window.location.search + window.location.hash)
+                .slice(1)
+                .split('&')
+                .reduce(function (pool, str) {
+                    var parm = str.split('=');
+                    pool[parm[0]] = (isset(parm[1])
+                        ? decodeURIComponent(decodeURIComponent(parm[1]))
+                        : true
+                    );
+                    return pool;
+                }, {});
+           
+            // set font face
+            var fontFace = (params.fontFace || 'arial');
+            domType.style.fontFamily = fontFace;
+            domSubject.style.fontFamily = fontFace;
+            domContent.style.fontFamily = fontFace;
+            //set font color
+            domType.style.color = params.typeFontColor;
+            domSubject.style.color = params.subjectFontColor;
+            domContent.style.color = params.contentFontColor;
+            //set font bg color
+            domType.style.backgroundColor = params.typeFontBgColor;
+            domSubject.style.backgroundColor = params.subjectFontBgColor;
+            domContent.style.backgroundColor = params.contentFontBgColor;
+
+            domType.className = "text-line";
+            domSubject.className = "text-line";
+            domContent.className = "text-line";
+            domType.innerHTML = 'Welcome to Our Platform';
+            domSubject.innerHTML = 'Delivering quality and excellence';
+            domContent.innerHTML = 'Your success is our mission';
+
+            domNewsImage.onload = function () {
+                domNewsImage.style.display = "block"; // Show image only if it loads successfully
+            };
+            domNewsImage.onerror = function () {
+                domNewsImage.style.display = "none"; // Hide image if it fails to load
+            };
+            domImage.className = "image-container";
+            domImage.appendChild(domNewsImage);
+
+            container.appendChild(domType);
+            container.appendChild(domSubject);
+            container.appendChild(domContent);
+            container.appendChild(domImage);
+
+            // set font size
+            //var fontPreg = Math.min(1.0, Math.max(0.1, parseFloat(params.fontSize||0.9)));
+            var resizeFont = function () {
+
+                domType.style.fontSize = params.typeFontSize + 'px';
+                domSubject.style.fontSize = params.subjectFontSize + 'px';
+                domContent.style.fontSize = params.contentFontSize + 'px';;
+
+                domType.style.textAlign = params.fontAlign;
+                domSubject.style.textAlign = params.fontAlign;
+                domContent.style.textAlign = params.fontAlign;
+            };
+            resizeFont();
+
+            // resize event
+            window.addEventListener('resize', function () {
+                resizeFont();
+            });
+
+            //fetch data
+            var newsIndex = 0;
+            var newsData = [];
+            var RAServerIPDefault = '122.116.163.62';
+            var RAServerIP;
+            var downloadNewsInterval = params.downloadNewsInterval;
+            var playNewsInterval = params.playNewsInterval;
+
+            var fetchRAServerIP = function () {
+                fetch('http://127.0.0.1:8083/getRAServerIP')
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data === null || data.trim() === "") {
+                            //console.log("getRAServerIP is null or empty");
+                            RAServerIP = RAServerIPDefault;
+                        } else {
+                            //console.log("getRAServerIP data:", data);
+                            RAServerIP = data;
+                        }
+                    });
+            }
+
+            var fetchNews = function () {
+                fetch('http://127.0.0.1:8083/news')
+                    .then(response => response.json())
+                    .then(data => {
+                        //console.log(data);
+                        newsData = data;
+                        updateNews();
+                    });
+            }
+
+            var updateNews = function () {
+                if (newsData.length > 0) {
+                    var news = newsData[newsIndex];
+                    //console.log(news);
+                    domType.innerHTML = news.type;
+                    domSubject.innerHTML = news.subject;
+                    domContent.innerHTML = news.content;
+                    domNewsImage.src = news.imageUrl;
+                    domNewsImage.alt = '';
+                    newsIndex = (newsIndex + 1) % newsData.length;
+                };
+            }
+            fetchRAServerIP();
+            fetchNews();
+            setInterval(fetchNews, downloadNewsInterval*1000*60);
+            setInterval(updateNews, playNewsInterval*1000);
+
+        });
+    </script>
+
+</head>
+
+<body>
+    <div class="wrapper">
+      <div class="container" id="content-container">
+      </div>
+    </div>
+</body>
+
+</html>
